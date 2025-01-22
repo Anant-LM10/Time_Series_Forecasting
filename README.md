@@ -25,7 +25,8 @@ Exploratory Data Analysis
 		Seasonality: Sales peak in December due to holiday shopping, also a usual weekly seasonality was observed in most cases.
 
 Methodology
-	Data Preprocessing:
+	
+ 	Data Preprocessing:
 
 		Filled missing values using interpolation for Oil data.
 		Holiday data was restructured to get the exact dates with Holiday and Events.
