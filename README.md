@@ -23,8 +23,11 @@ The Dataset shared in the competition had the following info:
 	Store information: To which locale the store belongs to and to which category.
 
 Exploratory Data Analysis
+
 	Key insights from EDA was that each family had different nature of sales in each store:
-		Trend: Families had a mix of trend patterns varying with each store/locale. 
+ 
+		Trend: Families had a mix of trend patterns varying with each store/locale.
+  
 		Seasonality: Sales peak in December due to holiday shopping, also a usual weekly seasonality was observed in most cases.
 
 Methodology
