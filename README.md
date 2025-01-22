@@ -7,10 +7,13 @@ The case of this competition is to forecast daily sales for an Ecuadorian Supers
 
 Dataset Description: 
 
-Source: Kaggle - 
-Description: The dataset consists of daily sales data from 2013 to Aug - 2017 for various stores.
-Number of Families/SKU Categories: 33
-Number of Stores: 54
+	Source: Kaggle - (https://www.kaggle.com/competitions/store-sales-time-series-forecasting/data), 
+
+	Description: The dataset consists of daily sales data from 2013 to Aug - 2017 for various stores, 
+
+	Number of Families/SKU Categories: 33,
+
+	Number of Stores: 54
 
 The Dataset shared in the competition had the following info: 
 
