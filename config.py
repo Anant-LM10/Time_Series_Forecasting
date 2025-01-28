@@ -281,7 +281,7 @@ class Forecasting:
     
 class Stat_Models():
     
-    def __init__(self, model, init_data, tsid, start, end, params, trend, backtesting=True):
+    def __init__(self, model, init_data, tsid, start, end, params, trend, lumpy=False, backtesting=True):
         self.model = model
         self.init_data = init_data
         self.tsid = tsid
@@ -289,6 +289,7 @@ class Stat_Models():
         self.end = end
         self.params = params
         self.backtesting = backtesting
+        self.lumpy = lumpy
         self.trend = trend
         
     def prophet_concurrent(self):
@@ -345,21 +346,24 @@ class Stat_Models():
         
         tes_365 = tes_fit.forecast(day)
         
-        #Seasonal_7
-        seas_7 = pd.DataFrame(sd_fit.seasonal["seasonal_7"])
-        seas_7.columns = ["sales"]
+        if lumpy == False:
+            seas_7 = pd.DataFrame(sd_fit.seasonal["seasonal_7"])
+            seas_7.columns = ["sales"]
 
-        train = seas_7[["sales"]][:datetime.strptime(self.start,"%Y-%m-%d")]
+            train = seas_7[["sales"]][:datetime.strptime(self.start,"%Y-%m-%d")]
+
+            if self.backtesting:
+                test = seas_7[["sales"]][datetime.strptime(self.start,"%Y-%m-%d"):datetime.strptime(self.end,"%Y-%m-%d")]
+
+            tes = ExponentialSmoothing(train, seasonal="add", seasonal_periods=7)
+            tes_fit = tes.fit(**self.params[1])
+
+            tes_7 = tes_fit.forecast(day)
         
-        if self.backtesting:
-            test = seas_7[["sales"]][datetime.strptime(self.start,"%Y-%m-%d"):datetime.strptime(self.end,"%Y-%m-%d")]
-
-        tes = ExponentialSmoothing(train, seasonal="add", seasonal_periods=7)
-        tes_fit = tes.fit(**self.params[1])
-
-        tes_7 = tes_fit.forecast(day)
+        if lumpy :
+            trend_params = self.params[1]
+        else : trend_params = self.params[2]
         
-        #Trend
         trend = pd.DataFrame(sd_fit.trend.dropna())
         trend.columns = ["sales"]
         trend = trend.merge(sales_tsid.drop(["sales"], axis=1), left_index=True, right_index=True)
@@ -369,11 +373,16 @@ class Stat_Models():
         if self.backtesting:    
             test = trend[["sales"]][datetime.strptime(self.start,"%Y-%m-%d"):datetime.strptime(self.end,"%Y-%m-%d")]
 
-        tes = ExponentialSmoothing(train, trend = self.params[2]["trend"], damped_trend=self.params[2]["damped_trend"])
-        tes_fit = tes.fit(smoothing_level=self.params[2]["smoothing_level"], smoothing_trend=self.params[2]["smoothing_trend"])
+        tes = ExponentialSmoothing(train, trend = trend_params["trend"], damped_trend=trend_params["damped_trend"])
+        tes_fit = tes.fit(smoothing_level=trend_params["smoothing_level"], smoothing_trend=trend_params["smoothing_trend"])
 
         tes_2 = tes_fit.forecast(day)
-        return np.array(tes_365) + np.array(tes_7) + np.array(tes_2)
+        
+        if lumpy:
+            tes = np.array(tes_365) + np.array(tes_2)
+        else: tes = np.array(tes_365) + np.array(tes_7) + np.array(tes_2)
+            
+        return tes
     
 class Tuning():
     
