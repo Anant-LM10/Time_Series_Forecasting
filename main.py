@@ -47,7 +47,7 @@ test_sales.set_index("date", inplace=True)
 test_sales["tsid"] = test_sales["family"]+"_"+test_sales["store_nbr"].astype(str)
 test_sales.drop(["id"],axis=1,inplace=True)
 
-def forecast_concurrent(tsid, acc_rf,acc_lgb,acc_xgb,start, end): 
+def forecast_concurrent(tsid,acc_rf,acc_lgb,acc_xgb,start,end): 
     
     print("TSID: ",tsid)
     prep = preprocessing(sales, tsid, list(classif[classif["tsid"] == tsid]["trend"])[0])
@@ -107,7 +107,7 @@ acc_rf,acc_lgb,acc_xgb = pd.DataFrame()
 fcst = Parallel(n_jobs=-1)(delayed(forecast_concurrent)(i,acc_rf,acc_lgb,acc_xgb,"2017-08-01","2017-08-15") for i in list(classif[(classif["ABC_classif"].isin(["A","B"])) & (classif["Segment"].isin(["Smooth","Erratic"]))]["tsid"]))
 
 met_exp = pd.DataFrame()
-for tsid in list(classif[(classif["ABC_classif"].isin(["A","B"])) & (classif["Segment"].isin(["Smooth","Erratic"]))]["tsid"]):
+for tsid in list(classif[(classif["Segment"].isin(["Smooth","Erratic"]))]["tsid"]):
 
     pre = preprocessing(sales,tsid,classif[classif["tsid"] == tsid]["trend"])
     sales_tsid = pre.final_data()
@@ -137,7 +137,7 @@ for tsid in list(classif[(classif["ABC_classif"].isin(["A","B"])) & (classif["Se
     met_exp = pd.concat((met_exp,pd.DataFrame([[tsid,1 - np.abs(sales_tsid["sales"]["2017-08-01":"2017-08-15"] - pd.DataFrame(X, index=sales_tsid["sales"]["2017-08-01":"2017-08-15"].index, columns=["sales"])["sales"]).sum()/sales_tsid["sales"]["2017-08-01":"2017-08-15"].sum(), metrics(sales_tsid["sales"]["2017-08-01":"2017-08-15"],pd.DataFrame(X, index=sales_tsid["sales"]["2017-08-01":"2017-08-15"].index, columns=["Prediction"]))[0], metrics(sales_tsid["sales"]["2017-08-01":"2017-08-15"],pd.DataFrame(X, index=sales_tsid["sales"]["2017-08-01":"2017-08-15"].index, columns=["Prediction"]))[1], metrics(sales_tsid["sales"]["2017-08-01":"2017-08-15"],pd.DataFrame(X, index=sales_tsid["sales"]["2017-08-01":"2017-08-15"].index, columns=["Prediction"]))[2], "TES", obj.best_params]], columns=["tsid","Accuracy","MAE","RMSE","RMSLE","Model","Params"])))
 
 met_pr = pd.DataFrame()
-for tsid in list(classif[(classif["ABC_classif"].isin(["A","B"])) & (classif["Segment"].isin(["Smooth","Erratic"]))]["tsid"]):
+for tsid in list(classif[(classif["Segment"].isin(["Smooth","Erratic"]))]["tsid"]):
 
     tune = Tuning(Prophet, sales, tsid, "2017-08-01", "2017-08-15", "sales", 1, False, 0)
     obj = tune.tune_parameters()
