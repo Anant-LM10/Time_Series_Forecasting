@@ -198,7 +198,6 @@ def expanding_wt_mean(x, al):
         
     return np.sum(weight * x) / np.sum(weight)
 
-
 def rolling_wt_mean(x,al):
     
     weight = np.ones(len(x))
@@ -436,9 +435,10 @@ class Tuning():
             ls_fit = fcst.fit(X)
             predict = fcst.predict(X)
             
-            mae = np.mean(np.abs(X1[datetime.strptime(self.start,"%Y-%m-%d"):datetime.strptime(self.end,"%Y-%m-%d")][self.col] - pd.DataFrame(predict,index=X1[:datetime.strptime(self.end,"%Y-%m-%d")].index, columns=[self.col]).fillna(0)[self.col]))    
+            mae = np.sqrt(mean_squared_log_error(X1[datetime.strptime(self.start,"%Y-%m-%d"):datetime.strptime(self.end,"%Y-%m-%d")][self.col],pd.DataFrame(predict,index=X1[:datetime.strptime(self.end,"%Y-%m-%d")].index, columns=[self.col]).fillna(0)[self.col]))
         
         elif self.model == Prophet:
+            
             df = self.init_data[self.init_data["tsid"] == self.tsid]
             train = df[:datetime.strptime(self.start, "%Y-%m-%d") - timedelta(days=1)]["sales"].reset_index()
             train.columns = ["ds","y"]
@@ -468,7 +468,7 @@ class Tuning():
             
             pred = pr.make_future_dataframe(periods=day, include_history=False)
             predict = pr.predict(pred)
-            mae = np.mean(np.abs(test.set_index("ds")["y"] - predict.set_index("ds")["yhat"]))    
+            mae = np.sqrt(mean_squared_log_error(test.set_index("ds")["y"],predict.set_index("ds")["yhat"]))
 
         else :    
             
@@ -489,7 +489,7 @@ class Tuning():
                 exp_fit = exp.fit(**ExpSmoothing_Fit_Optimization(trial))        
             
             predict = exp_fit.forecast((datetime.strptime(self.end,"%Y-%m-%d") - datetime.strptime(self.start,"%Y-%m-%d")).days+1)
-            mae = np.mean(np.abs(test[datetime.strptime(self.start,"%Y-%m-%d"):datetime.strptime(self.end,"%Y-%m-%d")][self.col] - pd.DataFrame(predict,index=test[:datetime.strptime(self.end,"%Y-%m-%d")].index, columns=[self.col]).fillna(0)[self.col]))    
+            mae = np.sqrt(mean_squared_log_error(test[datetime.strptime(self.start,"%Y-%m-%d"):datetime.strptime(self.end,"%Y-%m-%d")][self.col], pd.DataFrame(predict,index=test[:datetime.strptime(self.end,"%Y-%m-%d")].index, columns=[self.col]).fillna(0)[self.col]))    
 
         return mae
     
@@ -498,10 +498,3 @@ class Tuning():
         study.optimize(lambda trial : self.objective(trial), n_trials=self.trial)
         return study
 
-
-def metrics(train,test):
-    metric = []
-    metric.append(mean_absolute_error(test, train))
-    metric.append(np.sqrt(mean_squared_error(test,train)))
-    metric.append(np.sqrt(mean_squared_log_error(test,train)))
-    return metric
