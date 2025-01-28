@@ -23,10 +23,6 @@ oil = pd.read_csv(r"store-sales-time-series-forecasting\oil.csv")
 holidays = pd.read_csv(r"store-sales-time-series-forecasting\holidays_events.csv")
 stores = pd.read_csv(r"store-sales-time-series-forecasting\stores.csv")
 
-
-
-
-classif = pd.read_csv(r"classif.csv")
 sales.drop(["id"],axis=1,inplace=True)
 
 sales["date"] = sales["date"].apply(lambda x: datetime.strptime(x,"%Y-%m-%d"))
